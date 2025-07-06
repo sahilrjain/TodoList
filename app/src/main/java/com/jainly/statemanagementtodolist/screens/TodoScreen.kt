@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,35 +35,53 @@ fun TodoScreenRoot(
 
     TodoScreen(
         state.todos,
-        viewModel::onCheckClicked
+        viewModel::onAction
     )
 }
 
 @Composable
 fun TodoScreen(
     todos: List<TodoItem>,
-    onCheckedChange: (Int) -> Unit,
+    onAction: (TodoScreenActions) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(16.dp)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        itemsIndexed(todos) { index, item ->
-            TodoItem(index, item, onCheckedChange)
+        LazyColumn(
+            modifier = Modifier.weight(0.9f),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            itemsIndexed(todos) { index, item ->
+                TodoItem(index, item, onAction)
+            }
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                onAction(TodoScreenActions.OnAddTodoClick)
+            }
+        ) {
+            Text(text = "Add Todo")
         }
     }
+
 }
 
 @Composable
-fun TodoItem(index: Int, todo: TodoItem, onCheckedChange: (Int) -> Unit) {
+fun TodoItem(
+    index: Int,
+    todo: TodoItem,
+    onAction: (TodoScreenActions) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         Column(
-            modifier = Modifier.padding(16.dp).weight(0.9f),
+            modifier = Modifier.padding(16.dp).weight(0.8f),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.Start
         ) {
@@ -80,10 +100,20 @@ fun TodoItem(index: Int, todo: TodoItem, onCheckedChange: (Int) -> Unit) {
             )
         }
         Checkbox(
-            modifier = Modifier.weight(0.1f),
+            modifier = Modifier.weight(0.1f).padding(end = 10.dp),
             checked = todo.isChecked,
-            onCheckedChange = { onCheckedChange(index) }
+            onCheckedChange = {
+                onAction(TodoScreenActions.OnCheckClick(index))
+            }
         )
+        IconButton(
+            modifier = Modifier.weight(0.1f),
+            onClick = {
+                onAction(TodoScreenActions.OnDeleteClick(index))
+            }
+        ) {
+            Text(text = "X")
+        }
     }
 }
 
@@ -91,7 +121,7 @@ fun TodoItem(index: Int, todo: TodoItem, onCheckedChange: (Int) -> Unit) {
 @Composable
 fun TodoItemPreview() {
     TodoScreen(
-        listOf(TodoItem("Title", "description", false)),
-        onCheckedChange = {}
+        listOf(TodoItem(0,"Title", "description", false)),
+        onAction = {}
     )
 }
